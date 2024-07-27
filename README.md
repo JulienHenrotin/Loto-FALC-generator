@@ -1,7 +1,3 @@
-Voici un exemple de README pour votre projet GitHub :
-
----
-
 # Loto PDF Generator
 
 ## Description
