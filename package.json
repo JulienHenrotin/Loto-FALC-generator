@@ -10,12 +10,13 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@antfu/eslint-config": "2.23.2",
     "@types/node": "^20.14.12",
-    "typescript": "^5.5.4",
-   "@antfu/eslint-config": "2.23.2",
-    "eslint": "^8.57.0"
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
+    "pdf-lib": "^1.17.1",
     "ts-node": "^10.9.2"
   }
 }
