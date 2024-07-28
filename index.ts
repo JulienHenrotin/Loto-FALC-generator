@@ -1,6 +1,5 @@
 import fs from 'fs'
-import path from 'path'
-import { PDFDocument } from 'pdf-lib'
+import { PDFDocument, PDFPage, rgb } from 'pdf-lib'
 
 /**
  * GENERATION GRID DE NUMERO
@@ -24,7 +23,7 @@ function generateGridRandom(rows: number, cols: number): number[][] {
     return grid
 }
 
-function addBlack(grid : number[][]){
+function addBlack(grid: number[][]) {
     return grid.map(row => {
         const cols = row.length
         const firstIndex = generateRandomNumber(0, cols - 1)
@@ -32,7 +31,7 @@ function addBlack(grid : number[][]){
         do {
             secondIndex = generateRandomNumber(0, cols - 1)
         } while (secondIndex === firstIndex)
-        
+
         row[firstIndex] = 0
         row[secondIndex] = 0
         return row
@@ -44,56 +43,81 @@ function addBlack(grid : number[][]){
  */
 
 async function fetchImageByNumber(number: number): Promise<Uint8Array> {
-    const imagePath =  `pictures/${number}.jpg`
+    const imagePath = `pictures/${number}.jpeg`
     const imageBytes = fs.readFileSync(imagePath)
     return new Uint8Array(imageBytes)
 }
 
-async function createPdf(numbers: number[]) {
+async function createPdf(grids: number[][][]) {
     const pdfDoc = await PDFDocument.create()
-    const pageWidth = 841.89
-    const pageHeight = 1190.55
+    const pageWidth = 1190.55
+    const pageHeight = 841.89
     const page = pdfDoc.addPage([pageWidth, pageHeight])
 
-    const margin = 10
-    let currentX = 50 // Starting position
+    let currentX = 50
+    let currentY = 700
 
-    for (const number of numbers) {
-        const imageBytes = await fetchImageByNumber(number)
-        const image = await pdfDoc.embedJpg(imageBytes)
-
-        page.drawImage(image, {
-            x: currentX,
-            y: pageHeight - 50 - 150, // Assuming you want the images near the top
-            width: 150,
-            height: 150,
-        })
-
-        currentX += 150 + margin
-
-        // Check if the next image will overflow the page width, if so move to the next line
-        if (currentX + 150 + margin > pageWidth) {
+    grids.forEach((grid, index) => {
+        if (index > 0 && index % 2 === 0) {
             currentX = 50
+            currentY -= 400
         }
-    }
+        generateTable(page, grid, currentX, currentY)
+        currentX += 600
+    })
 
     const pdfBytes = await pdfDoc.save()
     fs.writeFileSync('output.pdf', pdfBytes)
 }
 
+function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number) {
+    const cellWidth = 529 / 5
+    const cellHeight = 362 / 3
+    // Couleurs et épaisseurs des bordures
+    const outerBorderWidth = 2
+    const innerBorderWidth = 1
+    const borderColor = rgb(0, 0, 0)
+
+    // Dessine les bordures du tableau
+    for (let row = 0; row <= 2; row++) {
+        const y = startY - row * cellHeight
+        for (let col = 0; col <= 5; col++) {
+            const x = startX + col * cellWidth
+            const borderWidth = outerBorderWidth
+            page.drawRectangle({
+                x,
+                y,
+                width: col === 5 ? 0 : cellWidth,
+                height: row === 3 ? 0 : cellHeight,
+                borderColor,
+                borderWidth,
+            })
+            if (row < 3 && col < 5 && grid[row][col] !== 0) {
+                page.drawText(grid[row][col].toString(), {
+                    x: x + cellWidth / 2 - 10,
+                    y: y + cellHeight / 2 - 10,
+                    size: 20,
+                    color: rgb(0, 0, 0)
+                })
+            }
+        }
+    }
+}
 
 /**
  * MAIN
  */
 const rows = 3
 const cols = 5
-let grid = generateGridRandom(rows, cols)
-grid = addBlack(grid)
+const grids = []
+for (let i = 0; i < 4; i++) {
+    let grid = generateGridRandom(rows, cols)
+    grid = addBlack(grid)
+    grids.push(grid)
+}
 
-const testArray = [1 , 2 ,3]
-createPdf(testArray)
+createPdf(grids)
     .then(() => console.log('PDF créé avec succès'))
     .catch(err => console.error('Erreur lors de la création du PDF:', err))
 
-
-console.log(grid)
+console.log(grids)
