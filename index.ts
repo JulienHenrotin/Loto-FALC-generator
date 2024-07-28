@@ -55,23 +55,32 @@ async function createPdf(numbers: number[]) {
     const pageHeight = 1190.55
     const page = pdfDoc.addPage([pageWidth, pageHeight])
 
+    const margin = 10
+    let currentX = 50 // Starting position
 
     for (const number of numbers) {
         const imageBytes = await fetchImageByNumber(number)
         const image = await pdfDoc.embedJpg(imageBytes)
-        const imageDims = image.scale(0.5) // Adjust the scale as needed
 
         page.drawImage(image, {
-            x: 50,
-            width: 20,
-            height: 20,
+            x: currentX,
+            y: pageHeight - 50 - 150, // Assuming you want the images near the top
+            width: 150,
+            height: 150,
         })
 
+        currentX += 150 + margin
+
+        // Check if the next image will overflow the page width, if so move to the next line
+        if (currentX + 150 + margin > pageWidth) {
+            currentX = 50
+        }
     }
 
     const pdfBytes = await pdfDoc.save()
     fs.writeFileSync('output.pdf', pdfBytes)
 }
+
 
 /**
  * MAIN
