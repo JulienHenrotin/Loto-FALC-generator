@@ -9,19 +9,32 @@ function generateRandomNumber(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+function generateRandomNumberWithExclude(min: number, max: number, exclude: Set<number>): number {
+    let randomNumber: number
+    do {
+        randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
+    } while (exclude.has(randomNumber))
+    exclude.add(randomNumber)
+    return randomNumber
+}
+
 function generateGridRandom(rows: number, cols: number): number[][] {
     const grid: number[][] = []
+    const colSets: Set<number>[] = Array.from({ length: cols }, () => new Set<number>())
+    
     for (let i = 0; i < rows; i++) {
         const row: number[] = []
         for (let j = 0; j < cols; j++) {
             const min = j * 10 + 1
             const max = (j + 1) * 10
-            row.push(generateRandomNumber(min, max))
+            row.push(generateRandomNumberWithExclude(min, max, colSets[j]))
         }
         grid.push(row)
     }
+    
     return grid
 }
+
 
 function addBlack(grid: number[][]) {
     return grid.map(row => {
@@ -149,8 +162,6 @@ for (let i = 0; i < 4; i++) {
     grids.push(grid)
 }
 
-createPdf(grids)
-    .then(() => console.log('PDF créé avec succès'))
-    .catch(err => console.error('Erreur lors de la création du PDF:', err))
+createPdf(grids).then(() => console.log('PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
 
 console.log(grids)
