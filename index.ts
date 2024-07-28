@@ -42,10 +42,15 @@ function addBlack(grid: number[][]) {
  * GENERATION PDF
  */
 
-async function fetchImageByNumber(number: number): Promise<Uint8Array> {
-    const imagePath = `pictures/${number}.jpeg`
-    const imageBytes = fs.readFileSync(imagePath)
-    return new Uint8Array(imageBytes)
+async function fetchImageByNumber(number: number, pdfDoc: PDFDocument): Promise<Uint8Array | undefined> {
+    try {
+        const imagePath = `pictures/${number}.png`
+        const imageBytes = fs.readFileSync(imagePath)
+        return new Uint8Array(imageBytes)
+    } catch (error) {
+        console.error(`Error fetching image for number ${number}:`, error)
+        return undefined
+    }
 }
 
 async function createPdf(grids: number[][][]) {
@@ -57,20 +62,21 @@ async function createPdf(grids: number[][][]) {
     let currentX = 50
     let currentY = 700
 
-    grids.forEach((grid, index) => {
+    for (let index = 0; index < grids.length; index++) {
+        const grid = grids[index]
         if (index > 0 && index % 2 === 0) {
             currentX = 50
             currentY -= 400
         }
-        generateTable(page, grid, currentX, currentY)
+        await generateTable(page, grid, currentX, currentY, pdfDoc)
         currentX += 600
-    })
+    }
 
     const pdfBytes = await pdfDoc.save()
     fs.writeFileSync('output.pdf', pdfBytes)
 }
 
-function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number) {
+async function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number, pdfDoc: PDFDocument) {
     const cellWidth = 529 / 5
     const cellHeight = 362 / 3
     // Couleurs et épaisseurs des bordures
@@ -92,17 +98,32 @@ function generateTable(page: PDFPage, grid: number[][], startX: number, startY: 
                 borderColor,
                 borderWidth,
             })
-            if (row < 3 && col < 5 && grid[row][col] !== 0) {
-                page.drawText(grid[row][col].toString(), {
-                    x: x + cellWidth / 2 - 10,
-                    y: y + cellHeight / 2 - 10,
-                    size: 20,
-                    color: rgb(0, 0, 0)
-                })
+            if (row < 3 && col < 5 ) {
+                const imageBytes = await fetchImageByNumber(grid[row][col], pdfDoc)
+                if (imageBytes) {
+                    const image = await pdfDoc.embedPng(imageBytes)
+                    const scaledWidth = cellWidth - 30 // Leave some padding around the image
+                    const scaledHeight = cellHeight - 30 // Leave some padding around the image
+                    const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
+                    page.drawImage(image, {
+                        x: x + (cellWidth - scaledImage.width) / 2,
+                        y: y + (cellHeight - scaledImage.height) / 2,
+                        width: scaledImage.width,
+                        height: scaledImage.height,
+                    })
+                } else {
+                    page.drawText(grid[row][col].toString(), {
+                        x: x + cellWidth / 2 - 10,
+                        y: y + cellHeight / 2 - 10,
+                        size: 20,
+                        color: rgb(0, 0, 0)
+                    })
+                }
             }
         }
     }
 }
+
 
 /**
  * MAIN
