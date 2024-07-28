@@ -83,6 +83,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
     const outerBorderWidth = 2
     const innerBorderWidth = 1
     const borderColor = rgb(0, 0, 0)
+    const grayColor = rgb(0.75, 0.75, 0.75) // Grey color
 
     // Dessine les bordures du tableau
     for (let row = 0; row <= 2; row++) {
@@ -98,23 +99,34 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                 borderColor,
                 borderWidth,
             })
-            if (row < 3 && col < 5 ) {
-                const imageBytes = await fetchImageByNumber(grid[row][col], pdfDoc)
-                if (imageBytes) {
-                    const image = await pdfDoc.embedPng(imageBytes)
-                    const scaledWidth = cellWidth - 30 // Leave some padding around the image
-                    const scaledHeight = cellHeight - 30 // Leave some padding around the image
-                    const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
-                    page.drawImage(image, {
-                        x: x + (cellWidth - scaledImage.width) / 2,
-                        y: y + (cellHeight - scaledImage.height) / 2,
-                        width: scaledImage.width,
-                        height: scaledImage.height,
+
+            if (row < 3 && col < 5) {
+                if (grid[row][col] === 0) {
+                    // Fill the cell with gray color if the value is 0
+                    page.drawRectangle({
+                        x,
+                        y,
+                        width: cellWidth,
+                        height: cellHeight,
+                        color: grayColor
                     })
                 } else {
+                    const imageBytes = await fetchImageByNumber(grid[row][col], pdfDoc)
+                    if (imageBytes) {
+                        const image = await pdfDoc.embedPng(imageBytes)
+                        const scaledWidth = cellWidth - 30 // Leave some padding around the image
+                        const scaledHeight = cellHeight - 30 // Leave some padding around the image
+                        const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
+                        page.drawImage(image, {
+                            x: x + (cellWidth - scaledImage.width) / 2,
+                            y: y + (cellHeight - scaledImage.height) / 2 + 5, // Adjust y to move the image up
+                            width: scaledImage.width,
+                            height: scaledImage.height,
+                        })
+                    }
                     page.drawText(grid[row][col].toString(), {
                         x: x + cellWidth / 2 - 10,
-                        y: y + cellHeight / 2 - 10,
+                        y: y + 10, // Position the text 10 units from the bottom of the cell
                         size: 20,
                         color: rgb(0, 0, 0)
                     })
