@@ -128,3 +128,7 @@ CTestTestfile.cmake
 cmake_install.cmake
 Makefile
 CMakeLists.txt.user
+
+# Exclude specific files at the root
+output.pdf
+grids.json

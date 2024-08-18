@@ -69,10 +69,6 @@ async function fetchImageByNumber(number: number, pdfDoc: PDFDocument): Promise<
     }
 }
 
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 async function createPdf(grids: number[][][], progressBar: cliProgress.SingleBar) {
     const pdfDoc = await PDFDocument.create()
     const pageWidth = 1190.55
@@ -97,7 +93,6 @@ async function createPdf(grids: number[][][], progressBar: cliProgress.SingleBar
                 printedGrids++
                 progressBar.update(printedGrids)
                 currentX += 600
-                await delay(1000)
             }
         }
     }
