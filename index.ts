@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import { PDFDocument, PDFPage, rgb } from 'pdf-lib'
+import * as readline from 'readline'
 
 /**
  * GENERATION GRID DE NUMERO
@@ -152,19 +153,40 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
 }
 
 /**
- * MAIN
+ * INTERFACE USER
  */
-const rows = 3
-const cols = 5
-const grids = []
-const numberOfPages = 3 // Changez ceci pour générer plus ou moins de pages
+// Création de l'interface pour lire l'entrée utilisateur
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+})
 
-for (let i = 0; i < numberOfPages * 4; i++) {
-    let grid = generateGridRandom(rows, cols)
-    grid = addBlack(grid)
-    grids.push(grid)
+// Fonction pour demander le nombre de pages
+function askNumberOfPages(): Promise<number> {
+    return new Promise((resolve) => {
+        rl.question('🧮 Combien de pages voulez-vous générer ? ', (answer) => {
+            resolve(parseInt(answer))
+            rl.close()
+        })
+    })
 }
 
-createPdf(grids).then(() => console.log('PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
 
-console.log(grids)
+/**
+ * MAIN
+ */
+askNumberOfPages().then(numberOfPages => {
+    const rows = 3
+    const cols = 5
+    const grids = []
+
+    for (let i = 0; i < numberOfPages * 4; i++) {
+        let grid = generateGridRandom(rows, cols)
+        grid = addBlack(grid)
+        grids.push(grid)
+    }
+
+    createPdf(grids).then(() => console.log('PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
+
+    console.log(grids)
+})
