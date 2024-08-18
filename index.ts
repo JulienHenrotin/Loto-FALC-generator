@@ -1,4 +1,4 @@
-import fs from 'fs'
+import * as fs from 'fs'
 import { PDFDocument, PDFPage, rgb } from 'pdf-lib'
 
 /**
@@ -35,7 +35,6 @@ function generateGridRandom(rows: number, cols: number): number[][] {
     return grid
 }
 
-
 function addBlack(grid: number[][]) {
     return grid.map(row => {
         const cols = row.length
@@ -70,19 +69,25 @@ async function createPdf(grids: number[][][]) {
     const pdfDoc = await PDFDocument.create()
     const pageWidth = 1190.55
     const pageHeight = 841.89
-    const page = pdfDoc.addPage([pageWidth, pageHeight])
 
-    let currentX = 50
-    let currentY = 700
+    // Boucle pour créer une page à chaque ensemble de 4 grilles
+    for (let pageIndex = 0; pageIndex < grids.length; pageIndex += 4) {
+        const page = pdfDoc.addPage([pageWidth, pageHeight])
+        let currentX = 50
+        let currentY = 700
 
-    for (let index = 0; index < grids.length; index++) {
-        const grid = grids[index]
-        if (index > 0 && index % 2 === 0) {
-            currentX = 50
-            currentY -= 400
+        // Ajouter jusqu'à 4 grilles par page
+        for (let gridIndex = 0; gridIndex < 4; gridIndex++) {
+            const grid = grids[pageIndex + gridIndex]
+            if (grid) {
+                if (gridIndex > 0 && gridIndex % 2 === 0) {
+                    currentX = 50
+                    currentY -= 400
+                }
+                await generateTable(page, grid, currentX, currentY, pdfDoc)
+                currentX += 600
+            }
         }
-        await generateTable(page, grid, currentX, currentY, pdfDoc)
-        currentX += 600
     }
 
     const pdfBytes = await pdfDoc.save()
@@ -92,13 +97,11 @@ async function createPdf(grids: number[][][]) {
 async function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number, pdfDoc: PDFDocument) {
     const cellWidth = 529 / 5
     const cellHeight = 362 / 3
-    // Couleurs et épaisseurs des bordures
     const outerBorderWidth = 2
     const innerBorderWidth = 1
     const borderColor = rgb(0, 0, 0)
-    const grayColor = rgb(0.75, 0.75, 0.75) // Grey color
+    const grayColor = rgb(0.75, 0.75, 0.75)
 
-    // Dessine les bordures du tableau
     for (let row = 0; row <= 2; row++) {
         const y = startY - row * cellHeight
         for (let col = 0; col <= 5; col++) {
@@ -115,7 +118,6 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
 
             if (row < 3 && col < 5) {
                 if (grid[row][col] === 0) {
-                    // Fill the cell with gray color if the value is 0
                     page.drawRectangle({
                         x,
                         y,
@@ -127,19 +129,19 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                     const imageBytes = await fetchImageByNumber(grid[row][col], pdfDoc)
                     if (imageBytes) {
                         const image = await pdfDoc.embedPng(imageBytes)
-                        const scaledWidth = cellWidth - 30 // Leave some padding around the image
-                        const scaledHeight = cellHeight - 30 // Leave some padding around the image
+                        const scaledWidth = cellWidth - 30
+                        const scaledHeight = cellHeight - 30
                         const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
                         page.drawImage(image, {
                             x: x + (cellWidth - scaledImage.width) / 2,
-                            y: y + (cellHeight - scaledImage.height) / 2 + 5, // Adjust y to move the image up
+                            y: y + (cellHeight - scaledImage.height) / 2 + 5,
                             width: scaledImage.width,
                             height: scaledImage.height,
                         })
                     }
                     page.drawText(grid[row][col].toString(), {
                         x: x + cellWidth / 2 - 10,
-                        y: y + 10, // Position the text 10 units from the bottom of the cell
+                        y: y + 10,
                         size: 20,
                         color: rgb(0, 0, 0)
                     })
@@ -149,14 +151,15 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
     }
 }
 
-
 /**
  * MAIN
  */
 const rows = 3
 const cols = 5
 const grids = []
-for (let i = 0; i < 4; i++) {
+const numberOfPages = 3 // Changez ceci pour générer plus ou moins de pages
+
+for (let i = 0; i < numberOfPages * 4; i++) {
     let grid = generateGridRandom(rows, cols)
     grid = addBlack(grid)
     grids.push(grid)
