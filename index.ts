@@ -1,10 +1,13 @@
 import * as fs from 'fs'
 import { PDFDocument, PDFPage, rgb } from 'pdf-lib'
 import * as readline from 'readline'
+import * as cliProgress from 'cli-progress' // Importation de cli-progress
+import { magenta } from 'ansi-colors'
+import * as colors from 'ansi-colors'
 
 /**
- * GENERATION GRID DE NUMERO
- */
+* GENERATION GRID DE NUMERO
+*/
 
 function generateRandomNumber(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min
@@ -15,7 +18,7 @@ function generateRandomNumberWithExclude(min: number, max: number, exclude: Set<
     do {
         randomNumber = Math.floor(Math.random() * (max - min + 1)) + min
     } while (exclude.has(randomNumber))
-    exclude.add(randomNumber)
+        exclude.add(randomNumber)
     return randomNumber
 }
 
@@ -44,7 +47,7 @@ function addBlack(grid: number[][]) {
         do {
             secondIndex = generateRandomNumber(0, cols - 1)
         } while (secondIndex === firstIndex)
-
+            
         row[firstIndex] = 0
         row[secondIndex] = 0
         return row
@@ -52,8 +55,8 @@ function addBlack(grid: number[][]) {
 }
 
 /**
- * GENERATION PDF
- */
+* GENERATION PDF
+*/
 
 async function fetchImageByNumber(number: number, pdfDoc: PDFDocument): Promise<Uint8Array | undefined> {
     try {
@@ -66,17 +69,22 @@ async function fetchImageByNumber(number: number, pdfDoc: PDFDocument): Promise<
     }
 }
 
-async function createPdf(grids: number[][][]) {
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function createPdf(grids: number[][][], progressBar: cliProgress.SingleBar) {
     const pdfDoc = await PDFDocument.create()
     const pageWidth = 1190.55
     const pageHeight = 841.89
-
+    let printedGrids = 0
+    
     // Boucle pour créer une page à chaque ensemble de 4 grilles
     for (let pageIndex = 0; pageIndex < grids.length; pageIndex += 4) {
         const page = pdfDoc.addPage([pageWidth, pageHeight])
         let currentX = 50
         let currentY = 700
-
+        
         // Ajouter jusqu'à 4 grilles par page
         for (let gridIndex = 0; gridIndex < 4; gridIndex++) {
             const grid = grids[pageIndex + gridIndex]
@@ -86,11 +94,14 @@ async function createPdf(grids: number[][][]) {
                     currentY -= 400
                 }
                 await generateTable(page, grid, currentX, currentY, pdfDoc)
+                printedGrids++
+                progressBar.update(printedGrids)
                 currentX += 600
+                await delay(1000)
             }
         }
     }
-
+    
     const pdfBytes = await pdfDoc.save()
     fs.writeFileSync('output.pdf', pdfBytes)
 }
@@ -102,7 +113,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
     const innerBorderWidth = 1
     const borderColor = rgb(0, 0, 0)
     const grayColor = rgb(0.75, 0.75, 0.75)
-
+    
     for (let row = 0; row <= 2; row++) {
         const y = startY - row * cellHeight
         for (let col = 0; col <= 5; col++) {
@@ -116,7 +127,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                 borderColor,
                 borderWidth,
             })
-
+            
             if (row < 3 && col < 5) {
                 if (grid[row][col] === 0) {
                     page.drawRectangle({
@@ -153,8 +164,8 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
 }
 
 /**
- * INTERFACE USER
- */
+* INTERFACE USER
+*/
 // Création de l'interface pour lire l'entrée utilisateur
 const rl = readline.createInterface({
     input: process.stdin,
@@ -172,48 +183,52 @@ function askNumberOfPages(): Promise<number> {
             const numberOfGrids = parseInt(answer)
             const numberOfSheets = convertNumberSheet(numberOfGrids)
             const finalNumberOfGrids = numberOfSheets * 4
-
-            // Codes ANSI pour la couleur
-            const reset = '\x1b[0m'
-            const brightYellow = '\x1b[93m'
-            const brightCyan = '\x1b[96m'
-            const brightGreen = '\x1b[92m' // Couleur verte brillante pour les séparateurs
-            const brightMagenta = '\x1b[95m' // Magenta vif pour le nombre final de grilles
-
-            console.log(`${brightGreen}===============================${reset}`)
-            console.log(`📊 Vous avez demandé ${brightYellow}${numberOfGrids}${reset} grilles.`)
-            console.log(`📝 Cela correspond à ${brightCyan}${numberOfSheets}${reset} feuille(s) de PDF (4 grilles par feuille).`)
-            console.log(`🔢 Le nombre final de grilles générées sera ${brightMagenta}${finalNumberOfGrids}${reset}.`)
-            console.log(`${brightGreen}===============================${reset}`)
-
+            
+            console.log()
+            console.log(colors.green('==============================='))
+            console.log(`📊 Vous avez demandé ${colors.yellow(numberOfGrids.toString())} grilles.`)
+            console.log(`📝 Cela correspond à ${colors.cyan(numberOfSheets.toString())} feuille(s) de PDF (4 grilles par feuille).`)
+            console.log(`🔢 Le nombre final de grilles générées sera ${colors.magenta(finalNumberOfGrids.toString())}.`)
+            console.log(colors.green('==============================='))
+            
             resolve(numberOfSheets)
             rl.close()
         })
-
     })
 }
 
-
-
 /**
- * MAIN
- */
-askNumberOfPages().then(numberOfPages => {
+* MAIN
+*/
+
+askNumberOfPages().then(async numberOfPages => {
     const rows = 3
     const cols = 5
     const grids = []
-
-    for (let i = 0; i < numberOfPages * 4; i++) {
+    
+    // Initialisation de la barre de progression
+    const totalGrids = numberOfPages * 4
+    
+    for (let i = 0; i < totalGrids; i++) {
         let grid = generateGridRandom(rows, cols)
         grid = addBlack(grid)
         grids.push(grid)
     }
-
+    
     // Enregistrer les grilles dans un fichier JSON
     const gridsJson = JSON.stringify(grids, null, 2) // Formatage avec indentation
-    fs.writeFileSync('grids.json', gridsJson)
-
-    createPdf(grids).then(() => console.log('🟢PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
-
+    await fs.writeFileSync('grids.json', gridsJson)
+    
+    const progressBar = new cliProgress.SingleBar({
+        format: `${magenta('{bar}')} {percentage}% | ETA: {eta}s | {value}/{total}`
+    }, cliProgress.Presets.shades_classic)
+    console.log()
+    progressBar.start(totalGrids, 0) 
+    await createPdf(grids , progressBar).then(() => {
+        console.log()
+        console.log('🟢 PDF créé avec succès')
+    }).catch(err => console.error('Erreur lors de la création du PDF:', err))
+    progressBar.stop()
+    console.log()
     console.log('🟢 Grilles enregistrées dans grids.json')
 })
