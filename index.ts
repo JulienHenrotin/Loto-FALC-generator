@@ -161,15 +161,38 @@ const rl = readline.createInterface({
     output: process.stdout
 })
 
+function convertNumberSheet(number: number): number {
+    return Math.ceil(number / 4)
+}
+
 // Fonction pour demander le nombre de pages
 function askNumberOfPages(): Promise<number> {
     return new Promise((resolve) => {
-        rl.question('🧮 Combien de pages voulez-vous générer ? ', (answer) => {
-            resolve(parseInt(answer))
+        rl.question('🧮 Combien de grilles voulez-vous générer ? ', (answer) => {
+            const numberOfGrids = parseInt(answer)
+            const numberOfSheets = convertNumberSheet(numberOfGrids)
+            const finalNumberOfGrids = numberOfSheets * 4
+
+            // Codes ANSI pour la couleur
+            const reset = '\x1b[0m'
+            const brightYellow = '\x1b[93m'
+            const brightCyan = '\x1b[96m'
+            const brightGreen = '\x1b[92m' // Couleur verte brillante pour les séparateurs
+            const brightMagenta = '\x1b[95m' // Magenta vif pour le nombre final de grilles
+
+            console.log(`${brightGreen}===============================${reset}`)
+            console.log(`📊 Vous avez demandé ${brightYellow}${numberOfGrids}${reset} grilles.`)
+            console.log(`📝 Cela correspond à ${brightCyan}${numberOfSheets}${reset} feuille(s) de PDF (4 grilles par feuille).`)
+            console.log(`🔢 Le nombre final de grilles générées sera ${brightMagenta}${finalNumberOfGrids}${reset}.`)
+            console.log(`${brightGreen}===============================${reset}`)
+
+            resolve(numberOfSheets)
             rl.close()
         })
+
     })
 }
+
 
 
 /**
