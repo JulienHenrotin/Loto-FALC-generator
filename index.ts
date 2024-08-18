@@ -209,7 +209,11 @@ askNumberOfPages().then(numberOfPages => {
         grids.push(grid)
     }
 
-    createPdf(grids).then(() => console.log('PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
+    // Enregistrer les grilles dans un fichier JSON
+    const gridsJson = JSON.stringify(grids, null, 2) // Formatage avec indentation
+    fs.writeFileSync('grids.json', gridsJson)
 
-    console.log(grids)
+    createPdf(grids).then(() => console.log('🟢PDF créé avec succès')).catch(err => console.error('Erreur lors de la création du PDF:', err))
+
+    console.log('🟢 Grilles enregistrées dans grids.json')
 })
