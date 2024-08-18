@@ -187,6 +187,7 @@ function askNumberOfPages(): Promise<number> {
             console.log(colors.green('==============================='))
             
             resolve(numberOfSheets)
+            console.time('⏱️ Temps total d\'exécution')
             rl.close()
         })
     })
@@ -226,4 +227,6 @@ askNumberOfPages().then(async numberOfPages => {
     progressBar.stop()
     console.log()
     console.log('🟢 Grilles enregistrées dans grids.json')
+    console.log()
+    console.timeEnd('⏱️ Temps total d\'exécution')
 })
