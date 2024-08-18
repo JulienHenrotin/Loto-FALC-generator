@@ -4,6 +4,7 @@ import * as readline from 'readline'
 import * as cliProgress from 'cli-progress' // Importation de cli-progress
 import { magenta } from 'ansi-colors'
 import * as colors from 'ansi-colors'
+import { displayNumber } from './gridUtils'
 
 /**
 * GENERATION GRID DE NUMERO
@@ -227,6 +228,13 @@ askNumberOfPages().then(async numberOfPages => {
     progressBar.stop()
     console.log()
     console.log('🟢 Grilles enregistrées dans grids.json')
+
+
+    /**
+     * Gestion doublons
+     */
+    displayNumber(grids)
+
     console.log()
     console.timeEnd('⏱️ Temps total d\'exécution')
 })
