@@ -1,7 +1,16 @@
-export function displayNumber(grids: number[][][]){
+import { calculateDuplicateProbability } from "./stat"
+
+export function displayNumber(grids: number[][][]) {
+    const stat = calculateDuplicateProbability(grids.length)
+
+    const formattedStat = Number(stat.toPrecision(1))
+
+    console.log("👀 Proba d'avoir des duplications :" + formattedStat + "%")
+
     const number = countNumberOccurrences(grids)
-    console.log("⚠️ Nombre de grilles dupliquées :" , number)
+    console.log("⚠️ Nombre de grilles dupliquées :", number)
 }
+
 
 export function countNumberOccurrences(grids: number[][][]) {
     // Helper function to count occurrences of numbers in a single grid
