@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { PDFDocument, PDFPage, rgb } from 'pdf-lib'
+import { PDFDocument, PDFPage, rgb , StandardFonts } from 'pdf-lib'
 import * as readline from 'readline'
 import * as cliProgress from 'cli-progress' // Importation de cli-progress
 import { magenta } from 'ansi-colors'
@@ -59,9 +59,9 @@ function addBlack(grid: number[][]) {
 * GENERATION PDF
 */
 
-async function fetchImageByNumber(number: number, pdfDoc: PDFDocument): Promise<Uint8Array | undefined> {
+async function fetchImageByNumber(number: number): Promise<Uint8Array | undefined> {
     try {
-        const imagePath = `pictures/${number}.png`
+        const imagePath = `picto2/${number}.png`
         const imageBytes = fs.readFileSync(imagePath)
         return new Uint8Array(imageBytes)
     } catch (error) {
@@ -109,7 +109,8 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
     const innerBorderWidth = 1
     const borderColor = rgb(0, 0, 0)
     const grayColor = rgb(0.75, 0.75, 0.75)
-    
+    const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+
     for (let row = 0; row <= 2; row++) {
         const y = startY - row * cellHeight
         for (let col = 0; col <= 5; col++) {
@@ -134,7 +135,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                         color: grayColor
                     })
                 } else {
-                    const imageBytes = await fetchImageByNumber(grid[row][col], pdfDoc)
+                    const imageBytes = await fetchImageByNumber(grid[row][col])
                     if (imageBytes) {
                         const image = await pdfDoc.embedPng(imageBytes)
                         const scaledWidth = cellWidth - 30
@@ -151,7 +152,8 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                         x: x + cellWidth / 2 - 10,
                         y: y + 10,
                         size: 20,
-                        color: rgb(0, 0, 0)
+                        color: rgb(0, 0, 0), 
+                        font : helveticaBoldFont
                     })
                 }
             }
