@@ -1,6 +1,6 @@
 import { calculateDuplicateProbability } from "./stat"
 
-export function displayNumber(grids: number[][][]) {
+export function displayNumberDuplicate(grids: number[][][]) {
     const stat = calculateDuplicateProbability(grids.length)
 
     const formattedStat = Number(stat.toPrecision(1))
