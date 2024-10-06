@@ -51,58 +51,75 @@ export async function createPdf(grids: number[][][], progressBar: cliProgress.Si
 async function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number, pdfDoc: PDFDocument) {
     const cellWidth = 529 / 5
     const cellHeight = 362 / 3
-    const outerBorderWidth = 2
-    const innerBorderWidth = 1
-    const borderColor = rgb(0, 0, 0)
     const grayColor = rgb(0.75, 0.75, 0.75)
     const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-    for (let row = 0; row <= 2; row++) {
+    // Ajuster la hauteur de startY pour que les lignes soient correctement alignées
+    const adjustedStartY = startY + cellHeight // Remonter d'une case
+    
+    // Dessiner les cellules sans bordures
+    for (let row = 0; row < 3; row++) {
         const y = startY - row * cellHeight
-        for (let col = 0; col <= 5; col++) {
+        for (let col = 0; col < 5; col++) {
             const x = startX + col * cellWidth
-            const borderWidth = outerBorderWidth
-            page.drawRectangle({
-                x,
-                y,
-                width: col === 5 ? 0 : cellWidth,
-                height: row === 3 ? 0 : cellHeight,
-                borderColor,
-                borderWidth,
-            })
-            
-            if (row < 3 && col < 5) {
-                if (grid[row][col] === 0) {
-                    page.drawRectangle({
-                        x,
-                        y,
-                        width: cellWidth,
-                        height: cellHeight,
-                        color: grayColor
-                    })
-                } else {
-                    const imageBytes = await fetchImageByNumber(grid[row][col])
-                    if (imageBytes) {
-                        const image = await pdfDoc.embedPng(imageBytes)
-                        const scaledWidth = cellWidth - 30
-                        const scaledHeight = cellHeight - 30
-                        const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
-                        page.drawImage(image, {
-                            x: x + (cellWidth - scaledImage.width) / 2,
-                            y: y + (cellHeight - scaledImage.height) / 2 + 5,
-                            width: scaledImage.width,
-                            height: scaledImage.height,
-                        })
-                    }
-                    page.drawText(grid[row][col].toString(), {
-                        x: x + cellWidth / 2 - 10,
-                        y: y + 10,
-                        size: 20,
-                        color: rgb(0, 0, 0), 
-                        font : helveticaBoldFont
+
+            if (grid[row][col] === 0) {
+                page.drawRectangle({
+                    x,
+                    y,
+                    width: cellWidth,
+                    height: cellHeight,
+                    color: grayColor
+                })
+            } else {
+                const imageBytes = await fetchImageByNumber(grid[row][col])
+                if (imageBytes) {
+                    const image = await pdfDoc.embedPng(imageBytes)
+                    const scaledWidth = cellWidth - 30
+                    const scaledHeight = cellHeight - 30
+                    const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
+                    page.drawImage(image, {
+                        x: x + (cellWidth - scaledImage.width) / 2,
+                        y: y + (cellHeight - scaledImage.height) / 2 + 5,
+                        width: scaledImage.width,
+                        height: scaledImage.height,
                     })
                 }
+                page.drawText(grid[row][col].toString(), {
+                    x: x + cellWidth / 2 - 10,
+                    y: y + 10,
+                    size: 20,
+                    color: rgb(0, 0, 0), 
+                    font : helveticaBoldFont
+                })
             }
         }
     }
+
+    // Dessiner les lignes rouges épaisses de la grille
+    const lineColor = rgb(1, 0, 0) // Couleur rouge
+    const lineThickness = 4 // Ajustez l'épaisseur selon vos besoins
+
+    // Dessiner les lignes verticales de la grille
+    for (let col = 0; col <= 5; col++) {
+        const x = startX + col * cellWidth
+        page.drawLine({
+            start: { x: x, y: adjustedStartY },
+            end: { x: x, y: adjustedStartY - 3 * cellHeight },
+            color: lineColor,
+            thickness: lineThickness,
+        })
+    }
+
+    // Dessiner les lignes horizontales de la grille
+    for (let row = 0; row <= 3; row++) {
+        const y = adjustedStartY - row * cellHeight
+        page.drawLine({
+            start: { x: startX, y: y },
+            end: { x: startX + 5 * cellWidth, y: y },
+            color: lineColor,
+            thickness: lineThickness,
+        })
+    }
 }
+

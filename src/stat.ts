@@ -29,5 +29,4 @@ function factorial(n: number): number {
     const probabilityDuplicate = 1 - probabilityNoDuplicate
   
     return probabilityDuplicate * 100
-  }
-  
+  } 
