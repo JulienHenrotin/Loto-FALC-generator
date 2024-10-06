@@ -1,10 +1,11 @@
 import * as fs from 'fs'
-import { PDFDocument, PDFPage, rgb , StandardFonts } from 'pdf-lib'
-import * as cliProgress from 'cli-progress' 
+import { PDFDocument, PDFPage, rgb, StandardFonts } from 'pdf-lib'
+import * as cliProgress from 'cli-progress'
+import { getRandomObject } from './colorsManagement' // Importer le script colorsManagement
 
 /**
-* GENERATION PDF
-*/
+ * GENERATION PDF
+ */
 async function fetchImageByNumber(number: number): Promise<Uint8Array | undefined> {
     try {
         const imagePath = `picto2/${number}.png`
@@ -21,13 +22,13 @@ export async function createPdf(grids: number[][][], progressBar: cliProgress.Si
     const pageWidth = 1190.55
     const pageHeight = 841.89
     let printedGrids = 0
-    
+
     // Boucle pour créer une page à chaque ensemble de 4 grilles
     for (let pageIndex = 0; pageIndex < grids.length; pageIndex += 4) {
         const page = pdfDoc.addPage([pageWidth, pageHeight])
         let currentX = 50
         let currentY = 700
-        
+
         // Ajouter jusqu'à 4 grilles par page
         for (let gridIndex = 0; gridIndex < 4; gridIndex++) {
             const grid = grids[pageIndex + gridIndex]
@@ -43,20 +44,20 @@ export async function createPdf(grids: number[][][], progressBar: cliProgress.Si
             }
         }
     }
-    
+
     const pdfBytes = await pdfDoc.save()
     fs.writeFileSync('output.pdf', pdfBytes)
 }
 
 async function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number, pdfDoc: PDFDocument) {
+    const colors = getRandomObject() // Obtenir un objet couleur aléatoire
     const cellWidth = 529 / 5
     const cellHeight = 362 / 3
-    const grayColor = rgb(0.75, 0.75, 0.75)
     const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
     // Ajuster la hauteur de startY pour que les lignes soient correctement alignées
     const adjustedStartY = startY + cellHeight // Remonter d'une case
-    
+
     // Dessiner les cellules sans bordures
     for (let row = 0; row < 3; row++) {
         const y = startY - row * cellHeight
@@ -69,7 +70,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                     y,
                     width: cellWidth,
                     height: cellHeight,
-                    color: grayColor
+                    color: colors.couleurBGsecondary
                 })
             } else {
                 const imageBytes = await fetchImageByNumber(grid[row][col])
@@ -85,19 +86,26 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                         height: scaledImage.height,
                     })
                 }
+                // page.drawRectangle({
+                //     x,
+                //     y,
+                //     width: cellWidth,
+                //     height: cellHeight,
+                //     color: colors.couleurBGprimary
+                // })
                 page.drawText(grid[row][col].toString(), {
                     x: x + cellWidth / 2 - 10,
                     y: y + 10,
                     size: 20,
-                    color: rgb(0, 0, 0), 
-                    font : helveticaBoldFont
+                    color: colors.couleurText,
+                    font: helveticaBoldFont
                 })
             }
         }
     }
 
-    // Dessiner les lignes rouges épaisses de la grille
-    const lineColor = rgb(1, 0, 0) // Couleur rouge
+    // Dessiner les lignes de la grille avec la couleur spécifiée
+    const lineColor = colors.couleurBorder
     const lineThickness = 5 // Ajustez l'épaisseur selon vos besoins
 
     // Dessiner les lignes verticales de la grille
@@ -122,4 +130,3 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
         })
     }
 }
-
