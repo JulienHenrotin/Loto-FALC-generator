@@ -98,7 +98,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
 
     // Dessiner les lignes rouges épaisses de la grille
     const lineColor = rgb(1, 0, 0) // Couleur rouge
-    const lineThickness = 4 // Ajustez l'épaisseur selon vos besoins
+    const lineThickness = 5 // Ajustez l'épaisseur selon vos besoins
 
     // Dessiner les lignes verticales de la grille
     for (let col = 0; col <= 5; col++) {
