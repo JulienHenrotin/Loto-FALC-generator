@@ -1,76 +1,41 @@
 import { rgb } from 'pdf-lib'
 
 const tableau = [
-    {
-      name: 'Objet 1',
-      couleurText: '#1A2B3C', 
-      couleurBGprimary: '#f5f6fc',
-      couleurBGsecondary: '#72A752',
-      couleurBorder: '#333333'
-    },
+    // {
+    //   name: 'Objet 1',
+    //   couleurText: '#000000', 
+    //   couleurBGprimary: '#f5f6fc',
+    //   couleurBGsecondary: '#8DB9B9',
+    //   couleurBorder: '#161414'
+    // },
+    // {
+    //   name: 'Objet 2',
+    //   couleurText: '#000000', 
+    //   couleurBGprimary: '#f5f6fc',
+    //   couleurBGsecondary: '#c5ebc3',
+    //   couleurBorder: '#161414'
+    // },
+    // {
+    //   name: 'Objet 2',
+    //   couleurText: '#000000', 
+    //   couleurBGprimary: '#f5f6fc',
+    //   couleurBGsecondary: '#e1ca96',
+    //   couleurBorder: '#161414'
+    // },
     {
       name: 'Objet 2',
-      couleurText: '#4F6B8C',
-      couleurBGprimary: '#d9dade',
-      couleurBGsecondary: '#E94B16',
-      couleurBorder: '#993377'
+      couleurText: '#000000', 
+      couleurBGprimary: '#f5f6fc',
+      couleurBGsecondary: '#e4e4e4',
+      couleurBorder: '#161414'
     },
-    {
-        name: 'Objet Mel',
-        couleurText: '#000814', 
-        couleurBGprimary: '#e1e6ed', 
-        couleurBGsecondary: '#001d3d', 
-        couleurBorder: '#40916c' 
-      },
-      {
-        name: 'Objet 3',
-        couleurText: '#231942', 
-        couleurBGprimary: '#e1e6ed', 
-        couleurBGsecondary: '#be95c4', 
-        couleurBorder: '#5e548e' 
-      },
-      {
-        name: 'Objet 4',
-        couleurText: '#073b4c', 
-        couleurBGprimary: '#e1e6ed', 
-        couleurBGsecondary: '#118ab2', 
-        couleurBorder: '#06d6a0' 
-      },
-      {
-        name: 'Objet 5',
-        couleurText: '#333533', 
-        couleurBGprimary: '#e1e6ed', 
-        couleurBGsecondary: '#f5cb5c', 
-        couleurBorder: '#242423' 
-      },
-      {
-        name: 'Objet 6',
-        couleurText: '#606c38', 
-        couleurBGprimary: '#e1e6ed', 
-        couleurBGsecondary: '#dda15e', 
-        couleurBorder: '#283618' 
-      },
-      {
-        name: 'Objet NoirBlanc 1',
-        couleurText: '#000000', // Noir
-        couleurBGprimary: '#FFFFFF', // Blanc
-        couleurBGsecondary: '#E0E0E0', // Gris clair
-        couleurBorder: '#444444' // Gris foncé
-      },
-      {
-        name: 'Objet NoirBlanc 2',
-        couleurText: '#333333', // Gris foncé
-        couleurBGprimary: '#F2F2F2', // Très clair
-        couleurBGsecondary: '#B0B0B0', // Gris moyen
-        couleurBorder: '#000000' // Noir
-      },
-      {
-        name: 'Objet NoirBlanc 3',
-        couleurText: '#FFFFFF', // Blanc
-        couleurBGprimary: '#CCCCCC', // Gris moyen
-        couleurBGsecondary: '#999999', // Gris un peu plus foncé
-        couleurBorder: '#222222' // Très foncé
-      }
+    // {
+    //   name: 'Objet 2',
+    //   couleurText: '#000000', 
+    //   couleurBGprimary: '#f5f6fc',
+    //   couleurBGsecondary: '#716f6f',
+    //   couleurBorder: '#161414'
+    // },
   ]
   
   

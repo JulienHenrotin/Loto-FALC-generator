@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import { PDFDocument, PDFPage, rgb, StandardFonts } from 'pdf-lib'
 import * as cliProgress from 'cli-progress'
-import { getRandomObject } from './colorsManagement' // Importer le script colorsManagement
+import { getRandomObject, hexToPdfLibRgb } from './colorsManagement' // Importer le script colorsManagement
 
 /**
  * GENERATION PDF
@@ -79,6 +79,8 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                     const scaledWidth = cellWidth - 30
                     const scaledHeight = cellHeight - 30
                     const scaledImage = image.scaleToFit(scaledWidth, scaledHeight)
+                
+                    // Dessiner l'image par-dessus le rectangle
                     page.drawImage(image, {
                         x: x + (cellWidth - scaledImage.width) / 2,
                         y: y + (cellHeight - scaledImage.height) / 2 + 5,
@@ -86,13 +88,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
                         height: scaledImage.height,
                     })
                 }
-                // page.drawRectangle({
-                //     x,
-                //     y,
-                //     width: cellWidth,
-                //     height: cellHeight,
-                //     color: colors.couleurBGprimary
-                // })
+                
                 page.drawText(grid[row][col].toString(), {
                     x: x + cellWidth / 2 - 10,
                     y: y + 10,
@@ -106,7 +102,8 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
 
     // Dessiner les lignes de la grille avec la couleur spécifiée
     const lineColor = colors.couleurBorder
-    const lineThickness = 5 // Ajustez l'épaisseur selon vos besoins
+    const lineThickness = 5 
+    const lineBorderThickness = 7
 
     // Dessiner les lignes verticales de la grille
     for (let col = 0; col <= 5; col++) {
@@ -115,7 +112,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
             start: { x: x, y: adjustedStartY },
             end: { x: x, y: adjustedStartY - 3 * cellHeight },
             color: lineColor,
-            thickness: lineThickness,
+            thickness: (col === 0 || col === 5) ? lineBorderThickness : lineThickness,
         })
     }
 
@@ -126,7 +123,7 @@ async function generateTable(page: PDFPage, grid: number[][], startX: number, st
             start: { x: startX, y: y },
             end: { x: startX + 5 * cellWidth, y: y },
             color: lineColor,
-            thickness: lineThickness,
+            thickness: (row === 0 || row === 3) ? lineBorderThickness : lineThickness,
         })
     }
 }
