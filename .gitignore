@@ -132,3 +132,4 @@ CMakeLists.txt.user
 # Exclude specific files at the root
 output.pdf
 grids.json
+output/

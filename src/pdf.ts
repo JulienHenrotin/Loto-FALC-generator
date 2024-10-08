@@ -1,7 +1,7 @@
 import * as fs from 'fs'
-import { PDFDocument, PDFPage, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, PDFPage, StandardFonts } from 'pdf-lib'
 import * as cliProgress from 'cli-progress'
-import { getRandomObject, hexToPdfLibRgb } from './colorsManagement' // Importer le script colorsManagement
+import { getRandomObject } from './colorsManagement' 
 
 /**
  * GENERATION PDF
@@ -46,8 +46,20 @@ export async function createPdf(grids: number[][][], progressBar: cliProgress.Si
     }
 
     const pdfBytes = await pdfDoc.save()
-    fs.writeFileSync('output.pdf', pdfBytes)
-}
+    const currentDate = new Date()
+    const formattedDate = currentDate.toLocaleString('fr-FR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).replace(/[\/:]/g, '-')
+    console.log("") 
+    console.log("📅 Nom du fichier : " , formattedDate)
+    const outputFileName = `output/${formattedDate}.pdf`
+    fs.writeFileSync(outputFileName, pdfBytes)
+} 
+
 
 async function generateTable(page: PDFPage, grid: number[][], startX: number, startY: number, pdfDoc: PDFDocument) {
     const colors = getRandomObject() // Obtenir un objet couleur aléatoire
