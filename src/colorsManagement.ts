@@ -1,21 +1,25 @@
 import { rgb, RGB } from 'pdf-lib'
 
+// * Types de données définissant une couleur initiale
 type Couleur = {
-  name: string,
-  couleurText: string,
-  couleurBGprimary: string,
-  couleurBGsecondary: string,
-  couleurBorder: string
+  name: string, // * Nom de la couleur
+  couleurText: string, // * Couleur du texte en format hexadécimal
+  couleurBGprimary: string, // * Couleur de fond principale en format hexadécimal
+  couleurBGsecondary: string, // * Couleur de fond secondaire en format hexadécimal
+  couleurBorder: string // * Couleur de la bordure en format hexadécimal
 }
 
+// * Types de données définissant une couleur convertie au format RGB
 type CouleurPdfLib = {
-  name: string,
-  couleurText: RGB,
-  couleurBGprimary: RGB,
-  couleurBGsecondary: RGB,
-  couleurBorder: RGB
+  name: string, // * Nom de la couleur
+  couleurText: RGB, // * Couleur du texte en format RGB
+  couleurBGprimary: RGB, // * Couleur de fond principale en format RGB
+  couleurBGsecondary: RGB, // * Couleur de fond secondaire en format RGB
+  couleurBorder: RGB // * Couleur de la bordure en format RGB
 }
 
+// ! Définition du tableau de couleurs initiales
+// TODO: Ajouter ou modifier les couleurs en fonction des besoins
 const tableau: Couleur[] = [
   {
     name: 'Rose Pale',
@@ -124,23 +128,31 @@ const tableau: Couleur[] = [
   }
 ]
 
+// * Fonction pour convertir une couleur hexadécimale en format RGB utilisable par pdf-lib
 export function hexToPdfLibRgb(hex: string): RGB {
-  const r = parseInt(hex.slice(1, 3), 16) / 255
-  const g = parseInt(hex.slice(3, 5), 16) / 255
-  const b = parseInt(hex.slice(5, 7), 16) / 255
-  return rgb(r, g, b)
+  // ? Vérifier que le format est correct (# suivi de 6 caractères hexadécimaux)
+  if (!/^#([0-9A-Fa-f]{6})$/.test(hex)) {
+    throw new Error('Format de couleur hexadécimale invalide. Utilisez un format comme #RRGGBB.')
+  }
+
+  const r = parseInt(hex.slice(1, 3), 16) / 255 // * Extraire la valeur rouge
+  const g = parseInt(hex.slice(3, 5), 16) / 255 // * Extraire la valeur verte
+  const b = parseInt(hex.slice(5, 7), 16) / 255 // * Extraire la valeur bleue
+  return rgb(r, g, b) // * Retourner l'objet RGB
 }
 
+// ! Conversion du tableau initial en un tableau compatible avec pdf-lib
 const tableauPdfLib: CouleurPdfLib[] = tableau.map(objet => ({
   ...objet,
-  couleurText: hexToPdfLibRgb(objet.couleurText),
-  couleurBGprimary: hexToPdfLibRgb(objet.couleurBGprimary),
-  couleurBGsecondary: hexToPdfLibRgb(objet.couleurBGsecondary),
-  couleurBorder: hexToPdfLibRgb(objet.couleurBorder)
+  couleurText: hexToPdfLibRgb(objet.couleurText), // * Conversion de couleurText en RGB
+  couleurBGprimary: hexToPdfLibRgb(objet.couleurBGprimary), // * Conversion de couleurBGprimary en RGB
+  couleurBGsecondary: hexToPdfLibRgb(objet.couleurBGsecondary), // * Conversion de couleurBGsecondary en RGB
+  couleurBorder: hexToPdfLibRgb(objet.couleurBorder) // * Conversion de couleurBorder en RGB
 }))
 
-// Fonction pour obtenir un objet aléatoire du tableau
+// * Fonction pour obtenir un objet aléatoire du tableau de couleurs converties
+// ? Utilisation de Math.random pour sélectionner un index aléatoire
 export function getRandomObject(): CouleurPdfLib {
-  const randomIndex = Math.floor(Math.random() * tableau.length)
-  return tableauPdfLib[randomIndex]
+  const randomIndex = Math.floor(Math.random() * tableau.length) // * Calculer un index aléatoire
+  return tableauPdfLib[randomIndex] // * Retourner l'objet aléatoire correspondant
 }
